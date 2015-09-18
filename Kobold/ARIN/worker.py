@@ -4,12 +4,12 @@ import pika
 import requests
 from netaddr import IPNetwork
 import json
-from Kobold import BaseWorker
+from Kobold.Kobold import BaseWorker
 
 
 class ArinWorker(BaseWorker):
-
-    def _arin_lookup(self, ip):
+    """ArinWorker is a fairly simple example worker to scrape ARIN's REST interface for ownership information of IPs"""
+    def arin_lookup(self, ip):
         r = requests.get('http://whois.arin.net/rest/ip/{}.json'.format(ip))
         j = json.loads(unicode(r.text))
         if 'orgRef' in r.text:
@@ -22,7 +22,7 @@ class ArinWorker(BaseWorker):
 
     def callback(self, ch, method, properties, body):
         for ip in IPNetwork(body):
-            r = self._arin_lookup(ip)
+            r = self.arin_lookup(ip)
             if r.split(':')[0] == 'BROKEN':
                 self.error_channel.basic_publish(exchange='', routing_key='{}_errors'.format(self._name),
                                                  body=r.split(':')[1], properties=pika.BasicProperties(delivery_mode=2,))

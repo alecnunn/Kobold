@@ -12,7 +12,7 @@ Kobold
 Kobold is a minimal framework used to design distributed tasks and workers, using RabbitMQ as its delivery queue.
 
 * Free software: MIT License
-* Documentation: https://Kobold.readthedocs.org.
+* Documentation: http://www.alecnunn.com/kobold
 
 Features
 --------
