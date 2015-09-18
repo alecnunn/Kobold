@@ -36,3 +36,6 @@ class ArinPuller(BaseWorker):
         self.results_channel.basic_qos(prefetch_count=1)
         self.results_channel.basic_consume(self.callback, queue='{}_results'.format(self._name))
         self.results_channel.start_consuming()
+
+if __name__ == '__main__':
+    ArinPuller('localhost').run()

@@ -14,6 +14,7 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@echo "clean - remove all build, test, coverage and Python artifacts"
 	@echo "clean-build - remove build artifacts"
+	@echo "clean-docs - cleans the documentation artifacts
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test - remove test and coverage artifacts"
 	@echo "lint - check style with flake8"
@@ -33,6 +34,11 @@ clean-build:
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
+
+clean-docs:
+	rm -f docs/Kobold.*rst
+	rm -f docs/modules.rst
+	rm -rf docs/_build/
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +

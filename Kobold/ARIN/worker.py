@@ -34,3 +34,6 @@ class ArinWorker(BaseWorker):
         self.tasking_channel.basic_qos(prefetch_count=1)
         self.tasking_channel.basic_consume(self.callback, queue='{}_tasking'.format(self._name))
         self.tasking_channel.start_consuming()
+
+if __name__ == '__main__':
+    ArinWorker('localhost').run()
