@@ -61,7 +61,7 @@ coverage:
 	$(BROWSER) htmlcov/index.html
 
 docs:
-	rm -f docs/Kobold.rst
+	rm -f docs/Kobold.*rst
 	rm -f docs/modules.rst
 	sphinx-apidoc -o docs/ Kobold
 	$(MAKE) -C docs clean
