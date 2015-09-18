@@ -4,7 +4,7 @@ import pika
 import requests
 from netaddr import IPNetwork
 import json
-from Kobold.Kobold import BaseWorker
+from Kobold.Base import BaseWorker
 
 
 class ArinWorker(BaseWorker):

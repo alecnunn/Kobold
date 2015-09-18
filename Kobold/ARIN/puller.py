@@ -3,7 +3,7 @@ __author__ = 'Alec Nunn'
 import socket
 import sqlite3
 import struct
-from Kobold.Kobold import BaseWorker
+from Kobold.Base import BaseWorker
 
 
 class ArinPuller(BaseWorker):

@@ -10,7 +10,7 @@ Tests for `Kobold` module.
 
 import unittest
 
-from Kobold import Kobold
+from Kobold import Base
 
 
 class TestKobold(unittest.TestCase):
