@@ -1,33 +1,47 @@
 # -*- coding: utf-8 -*-
 import pika
 
-
 class BaseWorker(object):
-    """The base worker is the class that all 'worker' nodes derive from."""
-    def __init__(self, hostname, name=''):
-        """It instantiates three queues: tasking, results, and errors.  The naming for these queues is based upon the class
-        name of the workers that derive from it.
+    def __init__(self, hostname, *args, **kwargs):
+        self.conn = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
+        self.channel = self.conn.channel()
+        self.channel.exchange_declare(exchange='kobold', type='topic')
+        self.result = self.channel.queue_declare(exclusive=True)
+        self.queue_name = self.result.method.queue
+        self.task_type = kwargs['type']
+        self.task_name = kwargs['name']
+        self.priority = kwargs['priority']
+        self.work_body = kwargs['body']
+        self.keys = {'tasks': '', 'results': '', 'errors': ''}
 
-        :param hostname: Indicates the hostname of the RabbitMQ server to connect to
-        :param name: Indicates the name of the queue or worker.  Can be left blank and it will derive from the class name
-        """
-        self._name = name if name != '' else self.__class__.__name__
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
-        self.tasking_channel = self.connection.channel()
-        self.tasking_channel.queue_declare(queue='{}_tasking'.format(self._name), durable=True)
-        self.results_channel = self.connection.channel()
-        self.results_channel.queue_declare(queue='{}_results'.format(self._name), durable=True)
-        self.error_channel = self.connection.channel()
-        self.error_channel.queue_declare(queue='{}_errors'.format(self._name), durable=True)
+    def SetPriority(self, priority):
+        self.priority = priority.lower()
 
-    def callback(self, ch, method, properties, body):
-        """
-        :param ch: You should not need to modify this field
-        :param method: This references the function that your worker will process
-        :param properties: You should not need to modify this field
-        :param body: This is the message being passed to and from the queues
-        """
-        pass
+    def Initialize(self):
+        binding_keys = ['tasks', 'results', 'errors']
+        for binding_key in binding_keys:
+            self.channel.queue_bind(exchange='kobold', queue=self.queue_name, routing_key="{}.{}.{}.{}".format(self.priority, self.task_type, self.task_name, binding_key))
+            self.keys[binding_key] = "{}.{}.{}.{}".format(self.priority, self.task_type, self.task_name, binding_key)
 
-    def run(self):
-        pass
+    def DoWork(self, ch, method, properties, body):
+        results = {}
+        self.PushResults(results)
+
+    def PushResults(self, msg, success=True):
+        rKey = self.keys['results'] if success else self.keys['errors']
+        self.channel.basic_publish(exchange='kobold', routing_key=rKey, body=msg)
+
+
+
+"""
+sample message structure
+
+{
+    "job": "arin",              // the task type that will be used
+    "version": "1.0.0",         // the version of the task that will be used
+    "job-name": "test",         // the user defined name for this instance
+    "body": {                   // the body that will be parsed by the workers
+        "params": "1.2.3.4/24"  // the workers will be responsible for parsing and using this info
+    }
+}
+"""

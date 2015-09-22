@@ -2,6 +2,7 @@ __author__ = 'Alec Nunn'
 
 import pika
 
+
 class ArinTasker(object):
     def __init__(self, hostname, name=''):
         self._name = name if name != '' else self.__class__.__name__

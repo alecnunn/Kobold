@@ -38,4 +38,5 @@ class ArinPuller(BaseWorker):
         self.results_channel.start_consuming()
 
 if __name__ == '__main__':
-    ArinPuller('localhost').run()
+    puller = ArinPuller('localhost', 'test')
+    puller.run()

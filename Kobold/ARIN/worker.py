@@ -36,4 +36,5 @@ class ArinWorker(BaseWorker):
         self.tasking_channel.start_consuming()
 
 if __name__ == '__main__':
-    ArinWorker('localhost').run()
+    worker = ArinWorker('localhost', 'test')
+    worker.run()
