@@ -2,7 +2,7 @@
 import pika
 
 class BaseWorker(object):
-    def __init__(self, hostname, *args, **kwargs):
+    def __init__(self, hostname, **kwargs):
         self.conn = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
         self.channel = self.conn.channel()
         self.channel.exchange_declare(exchange='kobold', type='topic')
@@ -12,24 +12,29 @@ class BaseWorker(object):
         self.task_name = kwargs['name']
         self.priority = kwargs['priority']
         self.work_body = kwargs['body']
-        self.keys = {'tasks': '', 'results': '', 'errors': ''}
+        self.keys = self.__initialize_bindings()
 
-    def SetPriority(self, priority):
-        self.priority = priority.lower()
-
-    def Initialize(self):
+    def __initialize_bindings(self):
         binding_keys = ['tasks', 'results', 'errors']
+        keys = {}
         for binding_key in binding_keys:
             self.channel.queue_bind(exchange='kobold', queue=self.queue_name, routing_key="{}.{}.{}.{}".format(self.priority, self.task_type, self.task_name, binding_key))
-            self.keys[binding_key] = "{}.{}.{}.{}".format(self.priority, self.task_type, self.task_name, binding_key)
+            keys[binding_key] = "{}.{}.{}.{}".format(self.priority, self.task_type, self.task_name, binding_key)
+        return keys
 
     def DoWork(self, ch, method, properties, body):
         results = {}
-        self.PushResults(results)
+        success = True if results != {} else False
+        self.PushResults(results, success)
 
     def PushResults(self, msg, success=True):
         rKey = self.keys['results'] if success else self.keys['errors']
         self.channel.basic_publish(exchange='kobold', routing_key=rKey, body=msg)
+
+    def run(self):
+        self.channel.basic_qos(prefetch_count=1)
+        self.channel.basic_consume(self.DoWork, queue=self.queue_name)
+        self.channel.start_consuming()
 
 
 

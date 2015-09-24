@@ -40,3 +40,5 @@ class ArinPuller(BaseWorker):
 if __name__ == '__main__':
     puller = ArinPuller('localhost', 'test')
     puller.run()
+    config = {'': ''}
+    p2 = ArinPuller('localhost', **config)

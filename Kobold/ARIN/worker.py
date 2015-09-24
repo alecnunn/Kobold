@@ -1,6 +1,5 @@
 __author__ = 'Alec Nunn'
 
-import pika
 import requests
 from netaddr import IPNetwork
 import json
@@ -20,20 +19,13 @@ class ArinWorker(BaseWorker):
             return 'BROKEN:{}'.format(ip)
         return '{}:{}'.format(ip, org_name)
 
-    def callback(self, ch, method, properties, body):
+    def DoWork(self, ch, method, properties, body):
         for ip in IPNetwork(body):
             r = self.arin_lookup(ip)
             if r.split(':')[0] == 'BROKEN':
-                self.error_channel.basic_publish(exchange='', routing_key='{}_errors'.format(self._name),
-                                                 body=r.split(':')[1], properties=pika.BasicProperties(delivery_mode=2,))
-            self.results_channel.basic_publish(exchange='', routing_key='{}_results'.format(self._name), body=r,
-                                               properties=pika.BasicProperties(delivery_mode=2,))
+                self.PushResults(r, False)
+            self.PushResults(r, True)
         ch.basic_ack(delivery_tag=method.delivery_tag)
-
-    def run(self):
-        self.tasking_channel.basic_qos(prefetch_count=1)
-        self.tasking_channel.basic_consume(self.callback, queue='{}_tasking'.format(self._name))
-        self.tasking_channel.start_consuming()
 
 if __name__ == '__main__':
     worker = ArinWorker('localhost', 'test')
