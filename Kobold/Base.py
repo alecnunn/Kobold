@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pika
 
+
 class BaseWorker(object):
     def __init__(self, hostname, **kwargs):
         self.conn = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
@@ -42,9 +43,10 @@ class BaseWorker(object):
 sample message structure
 
 {
-    "job": "arin",              // the task type that will be used
+    "type": "arin",             // the task type that will be used
     "version": "1.0.0",         // the version of the task that will be used
-    "job-name": "test",         // the user defined name for this instance
+    "name": "test",             // the user defined name for this instance
+    "priority": "high",         // the priority of the task.  Still working on how this will be determined by workers
     "body": {                   // the body that will be parsed by the workers
         "params": "1.2.3.4/24"  // the workers will be responsible for parsing and using this info
     }

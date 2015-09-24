@@ -28,5 +28,5 @@ class ArinWorker(BaseWorker):
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
 if __name__ == '__main__':
-    worker = ArinWorker('localhost', 'test')
-    worker.run()
+    w = ArinWorker('localhost', 'test')
+    w.run()

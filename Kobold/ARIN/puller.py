@@ -27,18 +27,13 @@ class ArinPuller(BaseWorker):
     def insert(self, ip, org):
         return self.query('insert into arin values (?, ?)', [self.ip_to_dec(ip), org])
 
-    def callback(self, ch, method, properties, body):
+    def DoWork(self, ch, method, properties, body):
         v = body.split(':')
         self.insert(v[0], v[1])
         ch.basic_ack(delivery_tag=method.deliver_tag)
 
-    def run(self):
-        self.results_channel.basic_qos(prefetch_count=1)
-        self.results_channel.basic_consume(self.callback, queue='{}_results'.format(self._name))
-        self.results_channel.start_consuming()
-
 if __name__ == '__main__':
-    puller = ArinPuller('localhost', 'test')
-    puller.run()
+    p = ArinPuller('localhost', 'test')
+    p.run()
     config = {'': ''}
     p2 = ArinPuller('localhost', **config)
